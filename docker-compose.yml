@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "air -c .air.toml"
+    volumes:
+      - .:/go/src/github.com/script-lab/responder
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+      MYSQL_HOST: "DOCKER_MYSQL"
+      MYSQL_DATABASE: $DB_NAME
+  db:
+    image: mysql:8.0
+    container_name: "DOCKER_MYSQL"
+    ports:
+      - 5306:5306
+    volumes:
+      - db-store:/var/lib/mysql
+      - ./log:/var/log/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+    restart: always
+volumes:
+  db-store:
